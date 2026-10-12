@@ -1,0 +1,35 @@
+# Hot-reload overlay for development. Usage:
+#   ENV=development docker compose -f compose.yml -f compose.dev.yml up --build --watch
+# Builds the `dev` Dockerfile targets under separate image tags, so the production tags stay intact.
+services:
+  api:
+    build:
+      target: dev
+    image: fastapi-clean-code-api:dev
+    command: ["./start.sh", "--reload", "--reload-dir", "src"]
+    develop:
+      watch:
+        - action: sync
+          path: ./api/src
+          target: /app/src
+        - action: rebuild
+          path: ./api/pyproject.toml
+        - action: rebuild
+          path: ./api/uv.lock
+
+  web:
+    build:
+      target: dev
+    image: fastapi-clean-code-web:dev
+    develop:
+      watch:
+        - action: sync
+          path: ./web/src
+          target: /app/src
+        - action: sync+restart
+          path: ./web/next.config.ts
+          target: /app/next.config.ts
+        - action: rebuild
+          path: ./web/package.json
+        - action: rebuild
+          path: ./web/bun.lock

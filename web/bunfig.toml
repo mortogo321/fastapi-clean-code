@@ -1,0 +1,2 @@
+# Bun does not expand ${VAR:-default}; let Next.js load and expand .env files.
+env = false

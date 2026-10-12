@@ -1,0 +1,54 @@
+name: fastapi-clean-code
+
+# ENV selects the env files baked into the images and passed to the containers:
+# production (default) or development (built-in dev secrets, Swagger enabled).
+services:
+  db:
+    image: postgres:18-trixie
+    env_file: ./api/.env.${ENV:-production}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # start.sh applies pending Alembic migrations, then starts the server.
+  api:
+    build:
+      context: ./api
+      args:
+        ENV: ${ENV:-production}
+    image: fastapi-clean-code-api
+    env_file: ./api/.env.${ENV:-production}
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        ENV: ${ENV:-production}
+    image: fastapi-clean-code-web
+    environment:
+      API_URL: http://api:8000
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:

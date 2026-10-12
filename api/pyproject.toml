@@ -1,0 +1,59 @@
+[project]
+name = "fastapi-clean-code"
+version = "0.1.0"
+description = "Clean Architecture REST API with FastAPI, SQLAlchemy and PostgreSQL (Python port of max38/golang-clean-code-architecture)"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.20.0",
+    "asyncpg>=0.32.0",
+    "bcrypt>=5.0.0",
+    "fastapi>=0.143.0",
+    "pydantic-settings>=2.15.0",
+    "pydantic[email]>=2.14.1",
+    "pyjwt>=2.15.1",
+    "sqlalchemy[asyncio]>=2.1.4",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "app"
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "B", "C4", "UP", "SIM", "RUF", "ASYNC", "S", "PT", "RET"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+files = ["src", "tests"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = ["error"]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.17.0",
+]
